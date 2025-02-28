@@ -1,22 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import './LandingPage.css';
-import HeroIllustration from './HeroIllustration';
 
 const LandingPage = () => {
   const [isVisible, setIsVisible] = useState(false);
-  const [imageLoaded, setImageLoaded] = useState(false);
-  const [imageError, setImageError] = useState(false);
 
   useEffect(() => {
     setIsVisible(true);
-    
-    // Simulate image loading delay
-    const timer = setTimeout(() => {
-      setImageLoaded(true);
-    }, 300);
-    
-    return () => clearTimeout(timer);
   }, []);
 
   return (

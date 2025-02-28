@@ -12,29 +12,42 @@ export const processFeedbackData = async (feedbackData) => {
     return { nodes: [], links: [], insights: [] };
   }
 
+  // Ensure all feedback items have an id and text field
+  const cleanedFeedbackData = feedbackData.map((item, index) => {
+    // More robust text extraction
+    const text = extractTextContent(item);
+    
+    return {
+      id: item.id || `feedback-${index}`,
+      text: text,
+      user_role: item.user_role || item.role || item.userRole || "",
+      timestamp: item.timestamp || item.date || item.created_at || new Date().toISOString()
+    };
+  });
+
   // Use OpenAI to classify feedback into themes
   console.log("Classifying feedback with OpenAI...");
-  const themeMap = await batchClassifyFeedback(feedbackData);
+  const themeMap = await batchClassifyFeedback(cleanedFeedbackData);
   
   // Use OpenAI to analyze sentiment of feedback
   console.log("Analyzing sentiment with OpenAI...");
-  const sentimentMap = await batchAnalyzeSentiment(feedbackData);
+  const sentimentMap = await batchAnalyzeSentiment(cleanedFeedbackData);
   
   // Extract unique themes from the classification results
-  const themes = [...new Set(Object.values(themeMap))];
+  const themes = [...new Set(Object.values(themeMap))].filter(Boolean);
   console.log("Extracted themes:", themes);
   
   // Create nodes for each feedback item, theme, and persona
-  const nodes = createNodes(feedbackData, themes, themeMap, sentimentMap);
+  const nodes = createNodes(cleanedFeedbackData, themes, themeMap, sentimentMap);
   
   // Create links between feedback and related themes/personas
-  const links = createLinks(feedbackData, themes, nodes, themeMap);
+  const links = createLinks(cleanedFeedbackData, themes, nodes, themeMap);
   
   // Generate AI insights from the feedback
-  const insights = await generateInsights(feedbackData, themes, themeMap, sentimentMap);
+  const insights = await generateInsights(cleanedFeedbackData, themes, themeMap, sentimentMap);
   
   // Generate additional analytical data for the AI panel
-  const analyticsData = generateAnalytics(feedbackData, themeMap, sentimentMap);
+  const analyticsData = generateAnalytics(cleanedFeedbackData, themeMap, sentimentMap);
   
   return { nodes, links, insights, analytics: analyticsData };
 };
@@ -47,61 +60,75 @@ const createNodes = (feedbackData, themes, themeMap, sentimentMap) => {
   
   // Create theme nodes
   themes.forEach(theme => {
-    // Count how many feedback items belong to this theme
-    const themeCount = Object.values(themeMap).filter(t => t === theme).length;
-    
-    nodes.push({
-      id: `theme-${theme.replace(/\s+/g, '-').toLowerCase()}`,
-      type: 'theme',
-      name: theme,
-      label: theme,
-      feedbackCount: themeCount,
-      value: 25 + (themeCount * 2), // Scale size based on feedback count
-      group: 'theme'
-    });
+    // Check if theme is defined before using toLowerCase
+    if (theme) {
+      // Count how many feedback items belong to this theme
+      const themeCount = Object.values(themeMap).filter(t => t === theme).length;
+      
+      nodes.push({
+        id: `theme-${theme.replace(/\s+/g, '-').toLowerCase()}`,
+        type: 'theme',
+        name: theme,
+        label: theme,
+        feedbackCount: themeCount,
+        value: 25 + (themeCount * 2), // Scale size based on feedback count
+        group: 'theme'
+      });
+    }
   });
   
   // Create persona nodes from feedback user_roles
   const uniqueRoles = [...new Set(feedbackData.map(item => item.user_role).filter(Boolean))];
   uniqueRoles.forEach(role => {
-    // Count how many feedback items are from this persona
-    const roleCount = feedbackData.filter(item => item.user_role === role).length;
-    
-    // Calculate sentiment for this role
-    const roleFeedback = feedbackData.filter(item => item.user_role === role);
-    let positiveCount = 0, negativeCount = 0, neutralCount = 0;
-    
-    roleFeedback.forEach(feedback => {
-      const sentiment = sentimentMap[feedback.id];
-      if (sentiment === 'Positive') positiveCount++;
-      else if (sentiment === 'Negative') negativeCount++;
-      else neutralCount++;
-    });
-    
-    nodes.push({
-      id: `persona-${role.replace(/\s+/g, '-').toLowerCase()}`,
-      type: 'persona',
-      name: role,
-      label: role,
-      feedbackCount: roleCount,
-      value: 20,
-      group: 'persona',
-      sentimentStats: {
-        positive: positiveCount,
-        negative: negativeCount,
-        neutral: neutralCount
-      }
-    });
+    // Check if role is defined before using toLowerCase
+    if (role) {
+      // Count how many feedback items are from this persona
+      const roleCount = feedbackData.filter(item => item.user_role === role).length;
+      
+      // Calculate sentiment for this role
+      const roleFeedback = feedbackData.filter(item => item.user_role === role);
+      let positiveCount = 0, negativeCount = 0, neutralCount = 0;
+      
+      roleFeedback.forEach(feedback => {
+        const sentiment = sentimentMap[feedback.id];
+        if (sentiment === 'Positive') positiveCount++;
+        else if (sentiment === 'Negative') negativeCount++;
+        else neutralCount++;
+      });
+      
+      nodes.push({
+        id: `persona-${role.replace(/\s+/g, '-').toLowerCase()}`,
+        type: 'persona',
+        name: role,
+        label: role,
+        feedbackCount: roleCount,
+        value: 20,
+        group: 'persona',
+        sentimentStats: {
+          positive: positiveCount,
+          negative: negativeCount,
+          neutral: neutralCount
+        }
+      });
+    }
   });
   
   // Create feedback nodes with more aggressive text truncation
   feedbackData.forEach(feedback => {
+    // Ensure text exists before trying to truncate it
+    const feedbackText = feedback.text || "";
+    
+    // Create a more meaningful label for the node
+    const nodeLabel = feedbackText.trim() ? 
+      truncateText(feedbackText, 20) : 
+      `Feedback ${feedback.id.substring(0, 8)}`;
+    
     nodes.push({
       id: feedback.id,
       type: 'feedback',
-      name: truncateText(feedback.text, 20), // More aggressive truncation
-      label: truncateText(feedback.text, 20),
-      title: feedback.text, // Full text stored for tooltip/details
+      name: nodeLabel,
+      label: nodeLabel,
+      title: feedbackText || "No text available", // Full text stored for tooltip/details
       value: 15,
       group: feedback.user_role || 'unknown',
       timestamp: feedback.timestamp,
@@ -369,15 +396,76 @@ const generateInsights = async (feedbackData, themes, themeMap, sentimentMap) =>
  */
 const truncateText = (text, maxLength) => {
   if (!text) return "No text";
-  if (text.length <= maxLength) return text;
+  
+  // Convert to string if not already
+  const textStr = String(text);
+  
+  if (textStr.trim() === '') return "No text";
+  if (textStr.length <= maxLength) return textStr;
   
   // For longer texts, try to find a good breaking point
-  const breakPoint = text.lastIndexOf(' ', maxLength - 3);
+  const breakPoint = textStr.lastIndexOf(' ', maxLength - 3);
   if (breakPoint > maxLength / 2) {
-    return text.substring(0, breakPoint) + '...';
+    return textStr.substring(0, breakPoint) + '...';
   }
-  return text.substring(0, maxLength) + '...';
+  return textStr.substring(0, maxLength) + '...';
 };
+
+/**
+ * Extract text content from various possible data structures
+ */
+const extractTextContent = (item) => {
+  if (!item) return "";
+  
+  // Check for direct text property
+  if (typeof item.text === 'string' && item.text.trim() !== '') {
+    return item.text.trim();
+  }
+  
+  // Check for content property
+  if (typeof item.content === 'string' && item.content.trim() !== '') {
+    return item.content.trim();
+  }
+  
+  // Check for message property
+  if (typeof item.message === 'string' && item.message.trim() !== '') {
+    return item.message.trim();
+  }
+  
+  // Check for feedback property
+  if (typeof item.feedback === 'string' && item.feedback.trim() !== '') {
+    return item.feedback.trim();
+  }
+  
+  // Check if the item itself is a string
+  if (typeof item === 'string' && item.trim() !== '') {
+    return item.trim();
+  }
+  
+  // Check for description property
+  if (typeof item.description === 'string' && item.description.trim() !== '') {
+    return item.description.trim();
+  }
+  
+  // Check for comment property
+  if (typeof item.comment === 'string' && item.comment.trim() !== '') {
+    return item.comment.trim();
+  }
+  
+  // If we have a body object with text
+  if (item.body && typeof item.body.text === 'string' && item.body.text.trim() !== '') {
+    return item.body.text.trim();
+  }
+  
+  // Last resort: stringify any non-empty content
+  for (const key in item) {
+    if (typeof item[key] === 'string' && item[key].trim() !== '') {
+      return item[key].trim();
+    }
+  }
+  
+  return "No feedback text available";
+}
 
 /**
  * Import and process JSON feedback data

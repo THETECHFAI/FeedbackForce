@@ -462,6 +462,11 @@ const fallbackBatchSentiment = (feedbackItems) => {
  * Mock function for sentiment analysis (used as fallback)
  */
 const mockAnalyzeSentiment = (text) => {
+  // Check if text exists before processing
+  if (!text) {
+    return { sentiment: 'Neutral', confidence: 0.5 };
+  }
+  
   const lowerText = text.toLowerCase();
   
   // Simple keyword-based sentiment analysis
