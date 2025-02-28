@@ -1,0 +1,44 @@
+<svg width="600" height="400" viewBox="0 0 600 400" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="nodeGradient1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3182CE" />
+      <stop offset="100%" stop-color="#4299E1" />
+    </linearGradient>
+    <linearGradient id="nodeGradient2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38A169" />
+      <stop offset="100%" stop-color="#48BB78" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="600" height="400" fill="#F7FAFC" rx="8" />
+  
+  <!-- Network Lines -->
+  <g stroke="#CBD5E0" stroke-width="2">
+    <line x1="150" y1="200" x2="300" y2="150" />
+    <line x1="300" y1="150" x2="450" y2="200" />
+    <line x1="300" y1="150" x2="300" y2="300" />
+    <line x1="150" y1="200" x2="300" y2="300" />
+    <line x1="450" y1="200" x2="300" y2="300" />
+  </g>
+  
+  <!-- Nodes -->
+  <g>
+    <!-- Central Node -->
+    <circle cx="300" cy="150" r="40" fill="url(#nodeGradient1)" />
+    <text x="300" y="155" text-anchor="middle" fill="white" font-size="12">Feedback</text>
+    
+    <!-- Theme Nodes -->
+    <circle cx="150" cy="200" r="30" fill="url(#nodeGradient2)" />
+    <circle cx="450" cy="200" r="30" fill="url(#nodeGradient2)" />
+    
+    <!-- Persona Node -->
+    <circle cx="300" cy="300" r="35" fill="url(#nodeGradient1)" />
+  </g>
+  
+  <!-- Animated Pulse Effects -->
+  <circle cx="300" cy="150" r="45" fill="none" stroke="#3182CE" opacity="0.3">
+    <animate attributeName="r" from="45" to="55" dur="2s" repeatCount="indefinite" />
+    <animate attributeName="opacity" from="0.3" to="0" dur="2s" repeatCount="indefinite" />
+  </circle>
+</svg> 
