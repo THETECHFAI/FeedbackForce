@@ -2,67 +2,167 @@ import React from 'react';
 
 const NetworkVisualization = () => {
   return (
-    <div className="network-visualization">
-      <svg 
-        width="100%" 
-        height="100%" 
-        viewBox="0 0 380 280" 
-        xmlns="http://www.w3.org/2000/svg"
-        style={{display: 'block'}}
-      >
-        {/* Background */}
-        <rect width="380" height="280" fill="#EBF8FF" rx="8" />
-        
-        {/* Central node */}
-        <circle cx="190" cy="140" r="30" fill="#3182CE" />
-        <text x="190" y="145" textAnchor="middle" fill="white" fontWeight="bold">Feedback</text>
-        
-        {/* Theme nodes */}
-        <circle cx="100" cy="80" r="20" fill="#38A169" />
-        <text x="100" y="85" textAnchor="middle" fill="white" fontSize="10">Performance</text>
-        
-        <circle cx="280" cy="80" r="20" fill="#38A169" />
-        <text x="280" y="85" textAnchor="middle" fill="white" fontSize="10">UI/UX</text>
-        
-        <circle cx="100" cy="200" r="20" fill="#38A169" />
-        <text x="100" y="205" textAnchor="middle" fill="white" fontSize="10">Mobile</text>
-        
-        <circle cx="280" cy="200" r="20" fill="#38A169" />
-        <text x="280" y="205" textAnchor="middle" fill="white" fontSize="10">Features</text>
-        
-        {/* User nodes */}
-        <circle cx="190" cy="40" r="15" fill="#DD6B20" />
-        <text x="190" y="44" textAnchor="middle" fill="white" fontSize="9">Power User</text>
-        
-        <circle cx="190" cy="240" r="15" fill="#DD6B20" />
-        <text x="190" y="244" textAnchor="middle" fill="white" fontSize="9">New User</text>
-        
-        <circle cx="40" cy="140" r="15" fill="#DD6B20" />
-        <text x="40" y="144" textAnchor="middle" fill="white" fontSize="9">Admin</text>
-        
-        <circle cx="340" cy="140" r="15" fill="#DD6B20" />
-        <text x="340" y="144" textAnchor="middle" fill="white" fontSize="9">Mobile User</text>
-        
-        {/* Feedback nodes */}
-        <circle cx="140" cy="110" r="10" fill="#E53E3E" />
-        <circle cx="240" cy="110" r="10" fill="#4299E1" />
-        <circle cx="140" cy="170" r="10" fill="#4299E1" />
-        <circle cx="240" cy="170" r="10" fill="#E53E3E" />
-        
-        {/* Connection lines */}
-        <line x1="190" y1="140" x2="100" y2="80" stroke="#CBD5E0" strokeWidth="2" />
-        <line x1="190" y1="140" x2="280" y2="80" stroke="#CBD5E0" strokeWidth="2" />
-        <line x1="190" y1="140" x2="100" y2="200" stroke="#CBD5E0" strokeWidth="2" />
-        <line x1="190" y1="140" x2="280" y2="200" stroke="#CBD5E0" strokeWidth="2" />
-        <line x1="190" y1="140" x2="190" y2="40" stroke="#CBD5E0" strokeWidth="2" />
-        <line x1="190" y1="140" x2="190" y2="240" stroke="#CBD5E0" strokeWidth="2" />
-        <line x1="190" y1="140" x2="40" y2="140" stroke="#CBD5E0" strokeWidth="2" />
-        <line x1="190" y1="140" x2="340" y2="140" stroke="#CBD5E0" strokeWidth="2" />
-        <line x1="190" y1="140" x2="140" y2="110" stroke="#CBD5E0" strokeWidth="1" />
-        <line x1="190" y1="140" x2="240" y2="110" stroke="#CBD5E0" strokeWidth="1" />
-        <line x1="190" y1="140" x2="140" y2="170" stroke="#CBD5E0" strokeWidth="1" />
-        <line x1="190" y1="140" x2="240" y2="170" stroke="#CBD5E0" strokeWidth="1" />
-      </svg>
+    <div className="hero-image" style={{ 
+      width: "100%", 
+      maxWidth: "100%", 
+      position: "relative", 
+      boxShadow: "none",
+      overflow: "hidden",
+      boxSizing: "border-box"
+    }}>
+      <div className="image-container" style={{ 
+        width: "100%",
+        maxWidth: "100%",
+        height: "375px",
+        padding: 0,
+        margin: 0,
+        position: "relative",
+        overflow: "hidden",
+        boxShadow: "none",
+        background: "transparent",
+        border: "none",
+        boxSizing: "border-box"
+      }}>
+        <svg 
+          width="100%" 
+          height="100%" 
+          viewBox="800 40 400 200" 
+          xmlns="http://www.w3.org/2000/svg"
+          style={{ 
+            background: "transparent",
+            filter: "none"
+          }}
+          preserveAspectRatio="xMidYMid meet"
+        >
+          {/* Generate network with medium zoom level */}
+          <g>
+            {/* Central node */}
+            <circle cx="1000" cy="140" r="22" fill="#3182CE" />
+            
+            {/* First ring of connections - reduced density */}
+            {Array.from({ length: 20 }).map((_, i) => {
+              const angle = (i * 18) * Math.PI / 180;
+              const x = 1000 + Math.cos(angle) * 70;
+              const y = 140 + Math.sin(angle) * 55;
+              const color = ['#3182CE', '#38A169', '#DD6B20', '#E53E3E', '#805AD5', '#4299E1'][Math.floor(Math.random() * 6)];
+              return (
+                <React.Fragment key={`inner-${i}`}>
+                  <line 
+                    x1="1000" 
+                    y1="140" 
+                    x2={x} 
+                    y2={y} 
+                    stroke="#CBD5E0" 
+                    strokeWidth="2" 
+                    opacity="0.8" 
+                  />
+                  <circle 
+                    cx={x} 
+                    cy={y} 
+                    r="7"
+                    fill={color} 
+                  />
+                </React.Fragment>
+              );
+            })}
+            
+            {/* Second ring - adjusted to prevent overlaps */}
+            {Array.from({ length: 40 }).map((_, i) => {
+              const angle = (i * 9) * Math.PI / 180;
+              const distance = 130 + Math.random() * 40;
+              const x = 1000 + Math.cos(angle) * distance;
+              const y = 140 + Math.sin(angle) * (distance * 0.7);
+              const connectToCenter = Math.random() > 0.5;
+              const color = ['#3182CE', '#38A169', '#DD6B20', '#E53E3E', '#805AD5', '#4299E1', '#D69E2E', '#319795', '#B83280'][Math.floor(Math.random() * 9)];
+              return (
+                <React.Fragment key={`middle-${i}`}>
+                  {connectToCenter && (
+                    <line 
+                      x1="1000" 
+                      y1="140" 
+                      x2={x} 
+                      y2={y} 
+                      stroke="#CBD5E0" 
+                      strokeWidth="1.5" 
+                      opacity="0.6" 
+                    />
+                  )}
+                  <circle 
+                    cx={x} 
+                    cy={y} 
+                    r="5.5"
+                    fill={color} 
+                  />
+                </React.Fragment>
+              );
+            })}
+            
+            {/* Outer ring - more spread */}
+            {Array.from({ length: 80 }).map((_, i) => {
+              const angle = (i * 4.5) * Math.PI / 180;
+              const distance = 180 + Math.random() * 100;
+              const x = 1000 + Math.cos(angle) * distance;
+              const y = 140 + Math.sin(angle) * (distance * 0.6);
+              const connectToCenter = Math.random() > 0.7;
+              const color = ['#3182CE', '#38A169', '#DD6B20', '#E53E3E', '#805AD5', '#4299E1', '#D69E2E', '#319795', '#B83280'][Math.floor(Math.random() * 9)];
+              return (
+                <React.Fragment key={`outer-${i}`}>
+                  {connectToCenter && (
+                    <line 
+                      x1="1000" 
+                      y1="140" 
+                      x2={x} 
+                      y2={y} 
+                      stroke="#CBD5E0" 
+                      strokeWidth="1" 
+                      opacity="0.4" 
+                    />
+                  )}
+                  <circle 
+                    cx={x} 
+                    cy={y} 
+                    r="4" 
+                    fill={color} 
+                  />
+                </React.Fragment>
+              );
+            })}
+            
+            {/* Node-to-node connections */}
+            {Array.from({ length: 70 }).map((_, i) => {
+              const angle1 = Math.random() * 360 * Math.PI / 180;
+              const angle2 = Math.random() * 360 * Math.PI / 180;
+              const distance1 = 60 + Math.random() * 180;
+              const distance2 = 60 + Math.random() * 180;
+              const x1 = 1000 + Math.cos(angle1) * distance1;
+              const y1 = 140 + Math.sin(angle1) * (distance1 * 0.7);
+              const x2 = 1000 + Math.cos(angle2) * distance2;
+              const y2 = 140 + Math.sin(angle2) * (distance2 * 0.7);
+              
+              // Only connect if the nodes are somewhat close
+              const dx = x1 - x2;
+              const dy = y1 - y2;
+              const distance = Math.sqrt(dx*dx + dy*dy);
+              
+              if (distance < 120) {
+                return (
+                  <line 
+                    key={`connection-${i}`}
+                    x1={x1} 
+                    y1={y1} 
+                    x2={x2} 
+                    y2={y2} 
+                    stroke="#CBD5E0" 
+                    strokeWidth="1" 
+                    opacity="0.3" 
+                  />
+                );
+              }
+              return null;
+            })}
+          </g>
+        </svg>
+      </div>
     </div>
   );
 };

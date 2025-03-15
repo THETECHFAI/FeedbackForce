@@ -10,13 +10,14 @@ const AppHeader = ({
   setSelectedNode, 
   handleNodeClick, 
   setShowSearchResults,
-  graphData
+  graphData,
+  hideSearch = false
 }) => {
   return (
     <div className="bg-white shadow-sm border-b border-gray-200">
       {/* Main navigation */}
       <nav className="container mx-auto px-4 py-6 flex items-center justify-between">
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-8">
           {/* Feedback Force Logo */}
           <Link to="/" className="flex items-center">
             <svg 
@@ -37,56 +38,86 @@ const AppHeader = ({
             </svg>
             <span className="text-xl font-bold text-gray-900 ml-2">Feedback Force</span>
           </Link>
+          
+          {/* Navigation Links */}
+          <div className="flex items-center space-x-6">
+            <Link to="/about" className="text-gray-600 hover:text-blue-600 font-medium">
+              About
+            </Link>
+            <Link to="/app" className="text-gray-600 hover:text-blue-600 font-medium">
+              App
+            </Link>
+            <Link to="/dashboard" className="text-gray-600 hover:text-blue-600 font-medium">
+              Dashboard
+            </Link>
+          </div>
         </div>
         
-        <div className="flex items-center space-x-8">
-          <Link to="/" className="text-gray-600 hover:text-blue-600">Home</Link>
-          
-          {/* Search bar */}
-          <div className="relative w-64">
+        {/* Search Box - Right Side (only show if hideSearch is false) */}
+        {!hideSearch && (
+          <div className="relative">
             <input
               type="text"
-              placeholder="Search"
-              value={searchTerm}
+              placeholder="Search feedback..."
+              className="w-64 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              value={searchTerm || ''}
               onChange={(e) => {
-                setSearchTerm(e.target.value);
-                if (e.target.value.length >= 2 && graphData?.nodes) {
-                  const filteredResults = graphData.nodes.filter(node => 
-                    node.name.toLowerCase().includes(e.target.value.toLowerCase())
-                  );
-                  setSearchResults(filteredResults);
-                  setShowSearchResults(true);
-                } else {
-                  setShowSearchResults(false);
-                  setSearchResults([]);
+                if (setSearchTerm) {
+                  setSearchTerm(e.target.value);
+                  
+                  if (e.target.value.length > 2 && graphData) {
+                    // Simple search implementation
+                    const results = graphData.nodes.filter(node => 
+                      node.type === 'feedback' && 
+                      node.title && 
+                      node.title.toLowerCase().includes(e.target.value.toLowerCase())
+                    );
+                    
+                    if (setSearchResults) {
+                      setSearchResults(results);
+                      setShowSearchResults(true);
+                    }
+                  } else if (setShowSearchResults) {
+                    setShowSearchResults(false);
+                  }
                 }
               }}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             {showSearchResults && searchResults && searchResults.length > 0 && (
-              <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-md shadow-lg z-20 max-h-60 overflow-y-auto">
-                {searchResults.map((result, index) => (
-                  <div 
-                    key={index}
-                    className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
-                    onClick={() => {
-                      if (setSelectedNode && handleNodeClick) {
-                        setSelectedNode(result);
-                        handleNodeClick(result);
-                      }
-                      setShowSearchResults(false);
-                    }}
-                  >
-                    <div className="flex items-center">
-                      <span>{result.name}</span>
-                      <span className="ml-2 text-xs text-gray-500">({result.type})</span>
-                    </div>
+              <div className="absolute right-0 mt-2 w-full bg-white border border-gray-300 rounded-lg shadow-lg z-10 max-h-96 overflow-y-auto">
+                <div className="p-2 border-b border-gray-200">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium text-gray-700">Search Results</span>
+                    <button 
+                      className="text-sm text-gray-500 hover:text-gray-700"
+                      onClick={() => setShowSearchResults(false)}
+                    >
+                      Close
+                    </button>
                   </div>
-                ))}
+                </div>
+                <ul>
+                  {searchResults.map(result => (
+                    <li 
+                      key={result.id} 
+                      className="p-3 hover:bg-gray-100 cursor-pointer border-b border-gray-100"
+                      onClick={(e) => {
+                        if (handleNodeClick) {
+                          handleNodeClick(result, e);
+                          setShowSearchResults(false);
+                          setSearchTerm('');
+                        }
+                      }}
+                    >
+                      <div className="text-sm font-medium text-gray-800">{result.label}</div>
+                      <div className="text-xs text-gray-500 mt-1">{result.title?.substring(0, 100)}...</div>
+                    </li>
+                  ))}
+                </ul>
               </div>
             )}
           </div>
-        </div>
+        )}
       </nav>
     </div>
   );

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { importFeedbackData } from '../utils/importData';
+import { importFeedbackData, generateAnalytics } from '../utils/importData';
 
-const FeedbackImporter = ({ onDataImported }) => {
+const FeedbackImporter = ({ onDataImported, onDataProcessed }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -20,6 +20,21 @@ const FeedbackImporter = ({ onDataImported }) => {
       
       const importedData = await importFeedbackData(file);
       onDataImported(importedData);
+      
+      if (onDataProcessed) {
+        const analyticsData = generateAnalytics(
+          importedData.feedback,
+          importedData.themeMap || {},
+          importedData.sentimentMap || {}
+        );
+        
+        onDataProcessed({
+          nodes: importedData.nodes,
+          links: importedData.links,
+          insights: {},
+          analytics: analyticsData
+        });
+      }
     } catch (err) {
       setError(err.message);
       console.error('Error importing file:', err);

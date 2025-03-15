@@ -1,4 +1,3 @@
-// UserResearchNetwork.js
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import * as d3 from 'd3';
 import { classifyFeedback, generateFeatureIdeas, analyzeSentiment } from '../services/openaiService';
@@ -34,7 +33,7 @@ const initialData = {
 };
 
 // Main component
-const UserResearchNetwork = () => {
+const UserResearchNetwork = ({ onDataProcessed }) => {
   // Refs
   const svgRef = useRef(null);
   const containerRef = useRef(null);
@@ -71,6 +70,9 @@ const UserResearchNetwork = () => {
 
   // Add a state to track if data has been imported
   const [hasImportedData, setHasImportedData] = useState(false);
+
+  // Initialize nodeElements as a state variable
+  const [nodeElements, setNodeElements] = useState([]);
 
   // Add these debug effect hooks at the top level
   useEffect(() => {
@@ -332,15 +334,6 @@ const UserResearchNetwork = () => {
     }
   }, [showAIInsightsPanel, isPanelCollapsed, panelWidth]);
 
-  // Recenter view when panel state changes
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      centerView();
-    }, 300);
-    
-    return () => clearTimeout(timer);
-  }, [showAIInsightsPanel, isPanelCollapsed]);
-
   // Recalculate feedback counts when feedback items change
   useEffect(() => {
     if (feedbackItems.length > 0) {
@@ -415,7 +408,9 @@ const UserResearchNetwork = () => {
         .strength(1)) // Stronger link force for better connections
       .force("charge", d3.forceManyBody().strength(-300))
       .force("center", d3.forceCenter(dimensions.width / 2, dimensions.height / 2))
-      .force("collide", d3.forceCollide(30));
+      .force("collide", d3.forceCollide(30))
+      // Fix: Add a small alpha decay to make the simulation more stable
+      .alphaDecay(0.05);
     
     simulationRef.current = simulation;
     
@@ -619,7 +614,8 @@ const UserResearchNetwork = () => {
     
     // Drag functions
     function dragstarted(event, d) {
-      if (!event.active) simulation.alphaTarget(0.3).restart();
+      // Fix: Use a smaller alpha target to reduce movement
+      if (!event.active) simulation.alphaTarget(0.2).restart();
       d.fx = d.x;
       d.fy = d.y;
     }
@@ -631,6 +627,12 @@ const UserResearchNetwork = () => {
     
     function dragended(event, d) {
       if (!event.active) simulation.alphaTarget(0);
+      
+      // Fix: Keep the node fixed at its current position after dragging
+      // This prevents the node from jumping when clicked
+      // Don't release the node position (keep it fixed where the user dragged it)
+      // d.fx = d.x;
+      // d.fy = d.y;
       
       // Only release the node if it's not the selected node
       if (!selectedNode || selectedNode.id !== d.id) {
@@ -1191,8 +1193,17 @@ const UserResearchNetwork = () => {
       }
     }
     
+    // Fix: Don't modify node positions when clicking
+    // Just update the selected node state without repositioning
+    setSelectedNode(prevNode => {
+      // If clicking the same node, keep it selected
+      if (prevNode && prevNode.id === node.id) {
+        return prevNode;
+      }
+      return node;
+    });
+    
     console.log("Node clicked, setting panel visible:", node);
-    setSelectedNode(node);
     
     // Find connected nodes
     const connectedLinks = graphData.links.filter(link => {
@@ -1555,6 +1566,37 @@ const UserResearchNetwork = () => {
     setHasImportedData(true);
   };
 
+  // After data processing, we need to ensure this is called
+  useEffect(() => {
+    if (graphData.nodes.length > 0 && onDataProcessed) {
+      // Make sure analyticsData is included when passing to parent
+      onDataProcessed({
+        nodes: graphData.nodes,
+        links: graphData.links,
+        insights: insights,
+        analytics: analyticsData  // This is crucial
+      });
+    }
+  }, [graphData, insights, analyticsData, onDataProcessed]);
+
+  // Add this check before using nodeElements
+  if (nodeElements && nodeElements.attr) {
+    // Update the sentiment coloring in the visualization
+    const nodeFill = d3.scaleOrdinal()
+      .domain(['Positive', 'Negative', 'Neutral'])
+      .range([colorScale('feedback-positive'), colorScale('feedback-negative'), colorScale('feedback-neutral')]);
+
+    // When rendering nodes:
+    nodeElements
+      .attr('fill', d => {
+        if (d.type === 'feedback') {
+          // Make sure we're using the correct sentiment for color, including neutral
+          return d.sentiment ? nodeFill(d.sentiment) : colorScale(d.type);
+        }
+        return colorScale(d.type);
+      });
+  }
+
   // Loading screen
   if (loading) {
     return (
@@ -1866,7 +1908,7 @@ const UserResearchNetwork = () => {
                           {/* Sentiment Overview Section with proper spacing */}
                           {analyticsData && analyticsData.sentimentDistribution && (
                             <div className="mb-6 pb-6 border-b border-gray-200">
-                              <h3 className="text-lg font-semibold text-gray-700 mb-4 text-center">Sentiment Overview</h3>
+                              <h3 className="text-lg font-semibold text-gray-700 mb-4 text-center">Total Sentiment Overview</h3>
                               <div className="bg-gray-50 p-4 rounded-lg shadow-sm">
                                 <div className="flex items-center justify-around mb-2">
                                   <div className="text-center">
@@ -1926,7 +1968,7 @@ const UserResearchNetwork = () => {
                                 {/* Sentiment mini-chart */}
                                 {aiInsights.sentimentDistribution && aiInsights.feedbackCount > 0 && (
                                   <div className="mb-4">
-                                    <div className="text-sm font-medium text-gray-700 mb-2">Sentiment Distribution</div>
+                                    <div className="text-sm font-medium text-gray-700 mb-2">Total Sentiment Distribution</div>
                                     <div className="flex h-6 rounded-full overflow-hidden">
                                       <div 
                                         className="bg-green-500" 
@@ -2027,7 +2069,7 @@ const UserResearchNetwork = () => {
                                 {/* Sentiment mini-chart */}
                                 {aiInsights.sentimentDistribution && aiInsights.feedbackCount > 0 && (
                                   <div className="mb-4">
-                                    <div className="text-sm font-medium text-gray-700 mb-2">Sentiment Distribution</div>
+                                    <div className="text-sm font-medium text-gray-700 mb-2">Total Sentiment Distribution</div>
                                     <div className="flex h-6 rounded-full overflow-hidden">
                                       <div 
                                         className="bg-green-500" 

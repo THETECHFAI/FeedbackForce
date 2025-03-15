@@ -209,7 +209,9 @@ const createLinks = (feedbackData, themes, nodes, themeMap) => {
 /**
  * Generate comprehensive analytics from feedback data
  */
-const generateAnalytics = (feedbackData, themeMap, sentimentMap) => {
+export const generateAnalytics = (feedbackData, themeMap, sentimentMap) => {
+  console.log("Generating analytics for", feedbackData.length, "feedback items");
+  
   // Overall sentiment distribution
   const sentimentCounts = { Positive: 0, Negative: 0, Neutral: 0 };
   Object.values(sentimentMap).forEach(sentiment => {

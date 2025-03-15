@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import NetworkVisualization from './NetworkVisualization';
 import './LandingPage.css';
 
 const LandingPage = () => {
@@ -75,8 +76,7 @@ const LandingPage = () => {
           </div>
           <nav className="main-nav">
             <ul>
-              <li><a href="#features">Features</a></li>
-              <li><a href="#how-it-works">How It Works</a></li>
+              <li><Link to="/about">About</Link></li>
               <li><Link to="/app" className="nav-button">Launch App</Link></li>
             </ul>
           </nav>
@@ -136,159 +136,17 @@ const LandingPage = () => {
           overflow: "hidden",
           boxSizing: "border-box"
         }}>
-          <div className="image-container" style={{ 
-            width: "100%",
-            maxWidth: "100%",
-            height: "375px",
-            padding: 0,
-            margin: 0,
-            position: "relative",
-            overflow: "hidden",
-            boxShadow: "none",
-            background: "transparent",
-            border: "none",
-            boxSizing: "border-box"
-          }}>
-            <svg 
-              width="100%" 
-              height="100%" 
-              viewBox="800 40 400 200" 
-              xmlns="http://www.w3.org/2000/svg"
-              style={{ 
-                background: "transparent",
-                filter: "none"
-              }}
-              preserveAspectRatio="xMidYMid meet"
-            >
-              {/* Generate network with medium zoom level */}
-              <g>
-                {/* Central node */}
-                <circle cx="1000" cy="140" r="22" fill="#3182CE" />
-                
-                {/* First ring of connections - reduced density */}
-                {Array.from({ length: 20 }).map((_, i) => {
-                  const angle = (i * 18) * Math.PI / 180;
-                  const x = 1000 + Math.cos(angle) * 70;
-                  const y = 140 + Math.sin(angle) * 55;
-                  const color = ['#3182CE', '#38A169', '#DD6B20', '#E53E3E', '#805AD5', '#4299E1'][Math.floor(Math.random() * 6)];
-                  return (
-                    <React.Fragment key={`inner-${i}`}>
-                      <line 
-                        x1="1000" 
-                        y1="140" 
-                        x2={x} 
-                        y2={y} 
-                        stroke="#CBD5E0" 
-                        strokeWidth="2" 
-                        opacity="0.8" 
-                      />
-                      <circle 
-                        cx={x} 
-                        cy={y} 
-                        r="7"
-                        fill={color} 
-                      />
-                    </React.Fragment>
-                  );
-                })}
-                
-                {/* Second ring - adjusted to prevent overlaps */}
-                {Array.from({ length: 40 }).map((_, i) => {
-                  const angle = (i * 9) * Math.PI / 180;
-                  const distance = 130 + Math.random() * 40;
-                  const x = 1000 + Math.cos(angle) * distance;
-                  const y = 140 + Math.sin(angle) * (distance * 0.7);
-                  const connectToCenter = Math.random() > 0.5;
-                  const color = ['#3182CE', '#38A169', '#DD6B20', '#E53E3E', '#805AD5', '#4299E1', '#D69E2E', '#319795', '#B83280'][Math.floor(Math.random() * 9)];
-                  return (
-                    <React.Fragment key={`middle-${i}`}>
-                      {connectToCenter && (
-                        <line 
-                          x1="1000" 
-                          y1="140" 
-                          x2={x} 
-                          y2={y} 
-                          stroke="#CBD5E0" 
-                          strokeWidth="1.5" 
-                          opacity="0.6" 
-                        />
-                      )}
-                      <circle 
-                        cx={x} 
-                        cy={y} 
-                        r="5.5"
-                        fill={color} 
-                      />
-                    </React.Fragment>
-                  );
-                })}
-                
-                {/* Outer ring - more spread */}
-                {Array.from({ length: 80 }).map((_, i) => {
-                  const angle = (i * 4.5) * Math.PI / 180;
-                  const distance = 180 + Math.random() * 100;
-                  const x = 1000 + Math.cos(angle) * distance;
-                  const y = 140 + Math.sin(angle) * (distance * 0.6);
-                  const connectToCenter = Math.random() > 0.7;
-                  const color = ['#3182CE', '#38A169', '#DD6B20', '#E53E3E', '#805AD5', '#4299E1', '#D69E2E', '#319795', '#B83280'][Math.floor(Math.random() * 9)];
-                  return (
-                    <React.Fragment key={`outer-${i}`}>
-                      {connectToCenter && (
-                        <line 
-                          x1="1000" 
-                          y1="140" 
-                          x2={x} 
-                          y2={y} 
-                          stroke="#CBD5E0" 
-                          strokeWidth="1" 
-                          opacity="0.4" 
-                        />
-                      )}
-                      <circle 
-                        cx={x} 
-                        cy={y} 
-                        r="4" 
-                        fill={color} 
-                      />
-                    </React.Fragment>
-                  );
-                })}
-                
-                {/* Node-to-node connections */}
-                {Array.from({ length: 70 }).map((_, i) => {
-                  const angle1 = Math.random() * 360 * Math.PI / 180;
-                  const angle2 = Math.random() * 360 * Math.PI / 180;
-                  const distance1 = 60 + Math.random() * 180;
-                  const distance2 = 60 + Math.random() * 180;
-                  const x1 = 1000 + Math.cos(angle1) * distance1;
-                  const y1 = 140 + Math.sin(angle1) * (distance1 * 0.7);
-                  const x2 = 1000 + Math.cos(angle2) * distance2;
-                  const y2 = 140 + Math.sin(angle2) * (distance2 * 0.7);
-                  
-                  // Only connect if the nodes are somewhat close
-                  const dx = x1 - x2;
-                  const dy = y1 - y2;
-                  const distance = Math.sqrt(dx*dx + dy*dy);
-                  
-                  if (distance < 120) {
-                    return (
-                      <line 
-                        key={`connection-${i}`}
-                        x1={x1} 
-                        y1={y1} 
-                        x2={x2} 
-                        y2={y2} 
-                        stroke="#CBD5E0" 
-                        strokeWidth="1" 
-                        opacity="0.3" 
-                      />
-                    );
-                  }
-                  return null;
-                })}
-              </g>
-            </svg>
-          </div>
+          <NetworkVisualization />
+        </div>
+      </section>
+
+      {/* New CTA Section - Added above Features */}
+      <section className="cta-banner">
+        <div className="cta-banner-content">
+          <h2>Ready to transform your feedback data?</h2>
+          <Link to="/app" className="cta-banner-button">
+            Start Analyzing Your Feedback
+          </Link>
         </div>
       </section>
 
@@ -352,36 +210,63 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* How It Works Section - more compact */}
+      {/* How It Works Section - updated to match Key Features format */}
       <section className="how-it-works" id="how-it-works">
         <h2>How It Works</h2>
-        <div className="steps">
-          <div className="step">
-            <div className="step-number">1</div>
+        <div className="features-grid">
+          <div className="feature-card">
+            <div className="feature-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" />
+              </svg>
+            </div>
             <h3>Import your feedback data</h3>
             <p>Upload your customer feedback from various sources</p>
           </div>
           
-          <div className="step-connector"></div>
-          
-          <div className="step">
-            <div className="step-number">2</div>
+          <div className="feature-card">
+            <div className="feature-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
+                <line x1="8" y1="21" x2="16" y2="21" />
+                <line x1="12" y1="17" x2="12" y2="21" />
+              </svg>
+            </div>
             <h3>AI analyzes patterns</h3>
             <p>Our AI identifies themes, sentiment, and relationships</p>
           </div>
           
-          <div className="step-connector"></div>
-          
-          <div className="step">
-            <div className="step-number">3</div>
+          <div className="feature-card">
+            <div className="feature-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="16" x2="12" y2="12" />
+                <line x1="12" y1="8" x2="12.01" y2="8" />
+              </svg>
+            </div>
             <h3>Explore insights</h3>
             <p>Interact with the visualization to discover actionable insights</p>
           </div>
+          
+          <div className="feature-card">
+            <div className="feature-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                <polyline points="22 4 12 14.01 9 11.01" />
+              </svg>
+            </div>
+            <h3>Take action</h3>
+            <p>Implement changes based on data-driven feedback insights</p>
+          </div>
         </div>
         
-        <Link to="/app" className="secondary-cta-button">
-          Start Analyzing Your Feedback
-        </Link>
+        <div className="cta-container" style={{ marginTop: "2rem", textAlign: "center" }}>
+          <Link to="/app" className="cta-button">
+            Start Analyzing Your Feedback
+          </Link>
+        </div>
       </section>
 
       {/* Footer - more compact */}
@@ -401,21 +286,13 @@ const LandingPage = () => {
               </ul>
             </div>
             <div className="footer-column">
-              <h3>Resources</h3>
-              <ul>
-                <li><a href="#">Documentation</a></li>
-                <li><a href="#">API</a></li>
-                <li><a href="#">Support</a></li>
-              </ul>
-            </div>
-            <div className="footer-column">
-              <h3>Company</h3>
-              <ul>
-                <li><a href="#">About Us</a></li>
-                <li><a href="#">Contact</a></li>
-                <li><a href="#">Privacy Policy</a></li>
-              </ul>
-            </div>
+  <h3>Contact</h3>
+  <ul>
+    <li>
+      <a href="mailto:hello@faisalshariff.io">Faisal Shariff</a>
+    </li>
+  </ul>
+</div>
           </div>
         </div>
         <div className="footer-bottom">

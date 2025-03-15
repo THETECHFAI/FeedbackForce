@@ -21,7 +21,7 @@ export const classifyFeedback = async (feedbackText) => {
     const response = await axios.post(
       'https://api.openai.com/v1/chat/completions',
       {
-        model: 'gpt-3.5-turbo',
+        model: 'gpt-4', // Updated to GPT-4
         messages: [
           {
             role: 'system',
@@ -32,7 +32,7 @@ export const classifyFeedback = async (feedbackText) => {
             content: `Categorize this feedback into a single theme: "${feedbackText}". Respond with a JSON object with the format {"theme": "ThemeName", "confidence": 0.X} where confidence is a number between 0 and 1.`
           }
         ],
-        temperature: 0.3,
+        temperature: 0.3, // Keeping as is for theme classification
         max_tokens: 100
       },
       {
@@ -79,7 +79,7 @@ export const batchClassifyFeedback = async (feedbackItems) => {
     const response = await axios.post(
       'https://api.openai.com/v1/chat/completions',
       {
-        model: 'gpt-3.5-turbo-16k',
+        model: 'gpt-4', // Updated to GPT-4
         messages: [
           {
             role: 'system',
@@ -90,7 +90,7 @@ export const batchClassifyFeedback = async (feedbackItems) => {
             content: `Categorize each of these feedback items into a single theme:\n\n${feedbackTexts}\n\nRespond with a JSON array with the format [{"feedbackIndex": 1, "theme": "ThemeName"}, {"feedbackIndex": 2, "theme": "ThemeName"}, ...] for each feedback item.`
           }
         ],
-        temperature: 0.3,
+        temperature: 0.3, // Keeping as is for theme classification
         max_tokens: 2000
       },
       {
@@ -150,7 +150,7 @@ export const generateFeatureIdeas = async (theme, relatedFeedback = []) => {
     const response = await axios.post(
       'https://api.openai.com/v1/chat/completions',
       {
-        model: 'gpt-3.5-turbo',
+        model: 'gpt-4', // Updated to GPT-4
         messages: [
           {
             role: 'system',
@@ -161,7 +161,7 @@ export const generateFeatureIdeas = async (theme, relatedFeedback = []) => {
             content: `Generate 2-3 feature ideas to address the "${theme}" theme in our application. ${feedbackContext}\n\nRespond with a JSON array of features with the format [{"name": "Feature Name", "description": "Brief description", "priority": "High/Medium/Low"}]`
           }
         ],
-        temperature: 0.7,
+        temperature: 0.7, // Keeping as is for creativity
         max_tokens: 500
       },
       {
@@ -198,7 +198,7 @@ export const analyzeSentiment = async (text) => {
     // Log the text being analyzed for debugging
     console.log("Analyzing sentiment for:", text);
     
-    // More precise prompt with examples
+    // Revised prompt with examples and improved rules
     const response = await fetch('/api/analyze-sentiment', {
       method: 'POST',
       headers: {
@@ -206,14 +206,16 @@ export const analyzeSentiment = async (text) => {
       },
       body: JSON.stringify({ 
         text,
-        instructions: `Analyze the sentiment of this user feedback, paying special attention to:
-- Mentions of problems, issues, or failures
-- Words indicating frustration or dissatisfaction
-- Technical issues or errors
-- Performance complaints
-- Accessibility concerns
-- Feature requests (which imply current functionality is insufficient)
-- Negative comparisons or expectations not met
+        instructions: `Analyze the sentiment of this user feedback with a focus on identifying implied positive or negative sentiments, even if not explicitly stated. Pay special attention to:
+- Mentions of problems, issues, failures, or errors (e.g., "The system doesn't…", "I can't…")
+- Words indicating frustration, dissatisfaction, or disappointment (e.g., "too slow", "difficult", "disappointing")
+- Technical issues or errors (e.g., "It crashes", "The feature doesn’t work")
+- Performance complaints (e.g., "It takes too long", "Slow response")
+- Accessibility concerns (e.g., "The text is too small", "Hard to navigate")
+- Feature requests or suggestions, which imply current functionality is insufficient (e.g., "It would be better if…", "I need to be able to…")
+- Negative comparisons or unmet expectations (e.g., "Not as good as…", "I expected better")
+- Explicit praise or satisfaction (e.g., "I love…", "Great job…")
+- Positive comparisons or exceeded expectations (e.g., "Better than before", "Really helpful")
 
 Feedback: "${text}"
 
@@ -222,26 +224,28 @@ Examples of NEGATIVE feedback:
 - "I can't find what I need" (usability problem)
 - "Sometimes it works" (inconsistency issue)
 - "The text is too small" (accessibility issue)
-- "It would be better if..." (suggestion implying current state is inadequate)
+- "It would be better if we had more options" (suggestion implying inadequacy)
 - "The app doesn't respect my settings" (functionality issue)
-- "I need to be able to..." (missing feature)
+- "I need to be able to filter by date" (missing feature)
+- "The search functionality is too basic" (usability complaint)
 
 Examples of NEUTRAL feedback:
-- "I use this feature daily" (statement of fact)
-- "The system has many features" (objective description)
-- "I noticed the new update" (observation without judgment)
+- "I use this feature daily" (purely descriptive, no judgment)
+- "The system has many features" (objective statement)
+- "I noticed the new update" (observation without clear positive/negative tone)
 
 Examples of POSITIVE feedback:
 - "I love how fast it is" (explicit praise)
 - "Great improvement from before" (positive comparison)
 - "The interface is intuitive and helpful" (positive evaluation)
+- "This feature works perfectly for me" (explicit satisfaction)
 
-Classification rules:
-- Classify as NEGATIVE if there are ANY complaints, issues, or negative experiences, even if mildly stated
-- Classify as POSITIVE only if EXPLICITLY praising or expressing satisfaction
-- Classify as NEUTRAL only if TRULY ambiguous or purely descriptive without any implied issues
-
-When in doubt, classify as NEGATIVE.
+Classification rules (prioritize correctly identifying negative and positive sentiments):
+1. Classify as NEGATIVE if there are ANY complaints, issues, suggestions, or negative experiences, even if mildly stated (e.g., "It would be nice if…" implies a gap, so it’s NEGATIVE).
+2. Classify as POSITIVE if there is EXPLICIT praise, satisfaction, or a positive comparison (e.g., "I love…", "Much better…").
+3. Classify as NEUTRAL only if the feedback is ENTIRELY descriptive or observational with NO implied issues, suggestions, or praise (e.g., "The system has 5 features").
+4. If the feedback contains both positive and negative elements, classify based on the dominant sentiment (e.g., "I love the design, but it’s too slow" is NEGATIVE due to the performance issue).
+5. When in doubt between Neutral and another category, lean toward NEGATIVE if there’s any implied issue, or POSITIVE if there’s any implied praise. Avoid overusing Neutral.
 
 Return only: "Negative", "Positive", or "Neutral" (with capital first letter only)`
       }),
@@ -289,7 +293,7 @@ export const batchAnalyzeSentiment = async (feedbackItems) => {
     const response = await axios.post(
       'https://api.openai.com/v1/chat/completions',
       {
-        model: 'gpt-3.5-turbo-16k',
+        model: 'gpt-4', // Updated to GPT-4
         messages: [
           {
             role: 'system',
@@ -297,11 +301,11 @@ export const batchAnalyzeSentiment = async (feedbackItems) => {
           },
           {
             role: 'user',
-            content: `Analyze the sentiment of each of these feedback items:\n\n${feedbackTexts}\n\nRespond with a JSON array with the format [{"feedbackIndex": 1, "sentiment": "Positive/Negative/Neutral"}, {"feedbackIndex": 2, "sentiment": "Positive/Negative/Neutral"}, ...] for each feedback item.`
+            content: `Analyze the sentiment of each of these feedback items:\n\n${feedbackTexts}\n\nRespond with a JSON array with the format [{"feedbackIndex": 1, "sentiment": "Positive/Negative/Neutral"}, {"feedbackIndex": 2, "sentiment": "Positive/Negative/Neutral"}, ...] for each feedback item. Follow these instructions for classification:\n\nAnalyze the sentiment of this user feedback with a focus on identifying implied positive or negative sentiments, even if not explicitly stated. Pay special attention to:\n- Mentions of problems, issues, failures, or errors (e.g., "The system doesn't…", "I can't…")\n- Words indicating frustration, dissatisfaction, or disappointment (e.g., "too slow", "difficult", "disappointing")\n- Technical issues or errors (e.g., "It crashes", "The feature doesn’t work")\n- Performance complaints (e.g., "It takes too long", "Slow response")\n- Accessibility concerns (e.g., "The text is too small", "Hard to navigate")\n- Feature requests or suggestions, which imply current functionality is insufficient (e.g., "It would be better if…", "I need to be able to…")\n- Negative comparisons or unmet expectations (e.g., "Not as good as…", "I expected better")\n- Explicit praise or satisfaction (e.g., "I love…", "Great job…")\n- Positive comparisons or exceeded expectations (e.g., "Better than before", "Really helpful")\n\nExamples of NEGATIVE feedback:\n- "The dashboard takes too long to load" (performance issue)\n- "I can't find what I need" (usability problem)\n- "Sometimes it works" (inconsistency issue)\n- "The text is too small" (accessibility issue)\n- "It would be better if we had more options" (suggestion implying inadequacy)\n- "The app doesn't respect my settings" (functionality issue)\n- "I need to be able to filter by date" (missing feature)\n- "The search functionality is too basic" (usability complaint)\n\nExamples of NEUTRAL feedback:\n- "I use this feature daily" (purely descriptive, no judgment)\n- "The system has many features" (objective statement)\n- "I noticed the new update" (observation without clear positive/negative tone)\n\nExamples of POSITIVE feedback:\n- "I love how fast it is" (explicit praise)\n- "Great improvement from before" (positive comparison)\n- "The interface is intuitive and helpful" (positive evaluation)\n- "This feature works perfectly for me" (explicit satisfaction)\n\nClassification rules (prioritize correctly identifying negative and positive sentiments):\n1. Classify as NEGATIVE if there are ANY complaints, issues, suggestions, or negative experiences, even if mildly stated (e.g., "It would be nice if…" implies a gap, so it’s NEGATIVE).\n2. Classify as POSITIVE if there is EXPLICIT praise, satisfaction, or a positive comparison (e.g., "I love…", "Much better…").\n3. Classify as NEUTRAL only if the feedback is ENTIRELY descriptive or observational with NO implied issues, suggestions, or praise (e.g., "The system has 5 features").\n4. If the feedback contains both positive and negative elements, classify based on the dominant sentiment (e.g., "I love the design, but it’s too slow" is NEGATIVE due to the performance issue).\n5. When in doubt between Neutral and another category, lean toward NEGATIVE if there’s any implied issue, or POSITIVE if there’s any implied praise. Avoid overusing Neutral.`
           }
         ],
-        temperature: 0.3,
-        max_tokens: 2000
+        temperature: 0.5, // Increased from 0.3 to 0.5
+        max_tokens: 4000 // Increased to accommodate larger responses with GPT-4
       },
       {
         headers: {
@@ -491,4 +495,4 @@ const mockAnalyzeSentiment = (text) => {
   } else {
     return { sentiment: 'Neutral', confidence: 0.5 };
   }
-}; 
+};
