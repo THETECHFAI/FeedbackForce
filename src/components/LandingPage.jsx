@@ -282,7 +282,7 @@ const LandingPage = () => {
               <ul>
                 <li><a href="#features">Features</a></li>
                 <li><a href="#how-it-works">How It Works</a></li>
-                <li><Link to="/app">Dashboard</Link></li>
+                <li><Link to="/app">App</Link></li>
               </ul>
             </div>
             <div className="footer-column">
