@@ -1601,7 +1601,7 @@ const UserResearchNetwork = ({ onDataProcessed }) => {
   if (loading) {
     return (
       <div className="flex flex-col h-full items-center justify-center bg-gray-50">
-        <div className="text-2xl text-blue-800 mb-4">Loading Insights Network...</div>
+        <div className="text-2xl text-blue-800 mb-4">Loading Insights Network...Large files may take longer to load.</div>
         <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
       </div>
     );

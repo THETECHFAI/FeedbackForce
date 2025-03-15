@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
-  PieChart, Pie, Cell, LineChart, Line
+  PieChart, Pie, Cell, LineChart, Line, Area
 } from 'recharts';
 import AppHeader from '../components/AppHeader';
 
@@ -234,25 +234,50 @@ const DashboardPage = ({ graphData }) => {
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart
                   data={timeSeriesData}
-                  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                  margin={{ top: 10, right: 30, left: 25, bottom: 20 }}
                 >
-                  <CartesianGrid strokeDasharray="3 3" />
+                  <CartesianGrid strokeDasharray="3 3" opacity={0.4} />
                   <XAxis 
                     dataKey="date" 
                     tickFormatter={(value) => {
                       const date = new Date(value);
                       return `${date.getMonth()+1}/${date.getDate()}`;
                     }}
+                    padding={{ left: 10, right: 10 }}
+                    tick={{ fill: '#4A5568', fontSize: 12 }}
                   />
-                  <YAxis />
+                  <YAxis 
+                    allowDecimals={false}
+                    tick={{ fill: '#4A5568', fontSize: 12 }}
+                    domain={[0, 'auto']}
+                  />
                   <Tooltip 
                     labelFormatter={(value) => {
                       const date = new Date(value);
                       return date.toLocaleDateString();
                     }}
+                    contentStyle={{ 
+                      borderRadius: '6px', 
+                      boxShadow: '0 2px 5px rgba(0,0,0,0.15)' 
+                    }}
                   />
-                  <Legend />
-                  <Line type="monotone" dataKey="count" stroke="#3182CE" activeDot={{ r: 8 }} name="Feedback Count" />
+                  <Legend wrapperStyle={{ paddingTop: '10px' }} />
+                  <Line 
+                    type="monotone" 
+                    dataKey="count" 
+                    stroke="#3182CE" 
+                    strokeWidth={2}
+                    activeDot={{ r: 8, fill: '#2C5282' }} 
+                    dot={{ stroke: '#3182CE', strokeWidth: 1, r: 4, fill: 'white' }}
+                    name="Feedback Count" 
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="count"
+                    fill="#3182CE"
+                    fillOpacity={0.08}
+                    stroke={false}
+                  />
                 </LineChart>
               </ResponsiveContainer>
             </div>
