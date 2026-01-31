@@ -1,56 +1,70 @@
-# 💬 FeedbackForce
+# 🔍 FeedbackForce
 
-> AI-powered feedback analysis — turn raw user feedback into actionable insights
+**AI-powered feedback analysis tool**
 
-## What is it?
+> *Turn messy user research into clear insights. Visualise feedback as interactive network graphs powered by OpenAI.*
 
-FeedbackForce is an AI-powered feedback analysis tool that transforms unstructured user feedback into structured, visual insights. Import feedback from any source, and the app uses OpenAI to perform sentiment analysis, theme extraction, and role-based breakdowns — all visualized through interactive charts and network graphs.
+## What It Does
+
+FeedbackForce transforms raw user feedback into actionable insights through AI-powered analysis and interactive network visualisations. Import feedback from any source, and the AI identifies patterns, themes, and connections — presenting them as a beautiful, explorable network graph. Built for product teams, UX researchers, and anyone drowning in qualitative data.
 
 ## ✨ Features
 
-- 🤖 **AI-Powered Analysis** — OpenAI automatically categorizes sentiment, themes, and patterns
-- 📊 **Rich Dashboard** — Interactive charts showing sentiment distribution, theme breakdown, and trends over time
-- 🕸️ **Network Visualization** — Force-directed graph showing relationships between feedback themes
-- 📥 **Feedback Importer** — Bulk import feedback from CSV or paste directly
-- 🎯 **Sentiment Tracking** — Positive, negative, and neutral sentiment analysis per theme and role
-- 👥 **Role-Based Insights** — Break down feedback by user roles (analysts, managers, sales, etc.)
-- 📈 **Trend Analysis** — Track feedback patterns over time with line charts
-- 🔥 **Heatmap View** — Calendar heatmap of feedback activity
+- 🧠 AI-powered feedback analysis via OpenAI
+- 🕸️ Interactive network graph visualisations
+- 📥 Flexible feedback data importer
+- 🎯 Theme and pattern detection
+- 📊 Dashboard with aggregated insights
+- 🖼️ Beautiful landing page with hero illustrations
+- 🎨 Clean, modern UI with Tailwind CSS
+- 📱 Responsive design
 
 ## 🛠️ Tech Stack
 
-- **Framework:** React 18
-- **Charts:** Recharts (bar, pie, line charts)
-- **Network Graph:** react-force-graph + D3.js
-- **AI:** OpenAI API (sentiment & theme analysis)
-- **Styling:** Tailwind CSS
-- **HTTP:** Axios
-- **Deployment:** Netlify
+- **React** — Frontend framework
+- **JavaScript** — Application logic (234KB)
+- **Tailwind CSS** — Utility-first styling
+- **OpenAI** — AI-powered feedback analysis
+- **Netlify** — Deployment
 
 ## 🚀 Getting Started
 
 ```bash
-# Clone the repo
 git clone https://github.com/THETECHFAI/FeedbackForce.git
-
-# Install dependencies
+cd FeedbackForce
 npm install
-
-# Set your OpenAI API key
-export REACT_APP_OPENAI_API_KEY=your_key_here
-
-# Run locally
 npm start
 ```
+
+Open [http://localhost:3000](http://localhost:3000).
+
+You'll need an OpenAI API key configured for the analysis features.
 
 ## 📁 Project Structure
 
 ```
-src/
-├── components/    # UI components (LandingPage, NetworkVisualization, FeedbackImporter)
-├── pages/         # Route pages (HomePage, DashboardPage, DemoPage, AboutPage)
-├── services/      # OpenAI integration
-└── utils/         # Data import utilities
+FeedbackForce/
+├── src/
+│   ├── components/
+│   │   ├── LandingPage.jsx         # Marketing landing page
+│   │   ├── NetworkVisualization.jsx # Main graph visualisation
+│   │   ├── DemoNetworkVisualization.jsx # Demo mode
+│   │   ├── FeedbackImporter.jsx    # Data import interface
+│   │   ├── Header.jsx              # Navigation header
+│   │   ├── Legend.jsx              # Graph legend
+│   │   └── HeroIllustration.jsx    # Landing page art
+│   ├── pages/
+│   │   ├── HomePage.js
+│   │   ├── DashboardPage.jsx
+│   │   ├── DemoPage.jsx
+│   │   └── AboutPage.jsx
+│   ├── services/
+│   │   └── openaiService.js        # OpenAI integration
+│   └── utils/
+│       └── importData.js           # Data parsing
+├── public/images/                   # Illustrations and assets
+├── netlify.toml                     # Deployment config
+└── tailwind.config.js
 ```
 
 ## 📄 License
